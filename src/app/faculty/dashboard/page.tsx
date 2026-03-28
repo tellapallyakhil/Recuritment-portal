@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import FacultyDashboard from './faculty-dashboard';
+import FacultyDashboard from './faculty-dashboard-client';
 
 function Loading() {
     return (

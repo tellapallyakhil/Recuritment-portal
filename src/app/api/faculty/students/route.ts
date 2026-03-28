@@ -24,12 +24,24 @@ async function verifyFaculty() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
+    const email = user.email?.toLowerCase() || '';
+
     const facultyEmails = (process.env.FACULTY_EMAILS || '')
         .split(',')
         .map(e => e.trim().toLowerCase());
 
-    if (!facultyEmails.includes(user.email?.toLowerCase() || '')) return null;
-    return user;
+    if (facultyEmails.includes(email)) return user;
+
+    const admin = getAdminClient();
+    const { data: faculty } = await admin
+        .from('faculty_registry')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+    if (faculty) return user;
+
+    return null;
 }
 
 function getAdminClient() {

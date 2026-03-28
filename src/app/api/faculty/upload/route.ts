@@ -2,8 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { PDFDocument } from 'pdf-lib';
-
 // Helper: Verify faculty authorization
 async function verifyFaculty() {
     const cookieStore = await cookies();
@@ -55,56 +53,9 @@ function getAdminClient() {
     );
 }
 
-/**
- * Compress a PDF using pdf-lib.
- * - Loads the PDF, copies all pages into a fresh document
- * - Strips unnecessary metadata, unused objects, and embedded thumbnails
- * - Returns the optimized PDF bytes
- */
-async function compressPdf(inputBuffer: Buffer): Promise<{ optimized: Uint8Array; originalSize: number; compressedSize: number }> {
-    const originalSize = inputBuffer.byteLength;
-
-    try {
-        // Load the source PDF
-        const sourcePdf = await PDFDocument.load(inputBuffer, {
-            ignoreEncryption: true,
-        });
-
-        // Create a brand new PDF and copy pages into it
-        // This drops all unused objects, metadata bloat, and orphaned resources
-        const compressedPdf = await PDFDocument.create();
-
-        const pages = await compressedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
-        pages.forEach((page) => compressedPdf.addPage(page));
-
-        // Strip metadata to save space
-        compressedPdf.setTitle('');
-        compressedPdf.setAuthor('');
-        compressedPdf.setSubject('');
-        compressedPdf.setKeywords([]);
-        compressedPdf.setProducer('KLU Recruitment Portal');
-        compressedPdf.setCreator('');
-
-        // Save with object streams enabled for better compression
-        const optimized = await compressedPdf.save({
-            useObjectStreams: true,      // Groups objects into compressed streams
-            addDefaultPage: false,       // Don't add extra blank pages
-        });
-
-        const compressedSize = optimized.byteLength;
-
-        // Only use compressed version if it's actually smaller
-        if (compressedSize < originalSize) {
-            return { optimized, originalSize, compressedSize };
-        }
-
-        // If compression made it larger (rare), return original
-        return { optimized: new Uint8Array(inputBuffer), originalSize, compressedSize: originalSize };
-    } catch (err) {
-        // If compression fails for any reason, fall back to the original
-        console.warn('PDF compression failed, using original:', err);
-        return { optimized: new Uint8Array(inputBuffer), originalSize, compressedSize: originalSize };
-    }
+// Upload PDF bypassing compression to preserve digital signatures
+async function processPdfBuffer(inputBuffer: Buffer): Promise<{ finalBuffer: Buffer; size: number }> {
+    return { finalBuffer: inputBuffer, size: inputBuffer.byteLength };
 }
 
 // POST: Upload one or more PDF files with compression
@@ -137,13 +88,12 @@ export async function POST(request: Request) {
             const arrayBuffer = await singleFile.arrayBuffer();
             const originalBuffer = Buffer.from(arrayBuffer);
 
-            // Compress the PDF
-            const { optimized, originalSize, compressedSize } = await compressPdf(originalBuffer);
-            const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+            // Preserve exact binary array to maintain signatures
+            const { finalBuffer, size } = await processPdfBuffer(originalBuffer);
 
             const { error } = await admin.storage
                 .from('recruitment-pdfs')
-                .upload(fileName, optimized, {
+                .upload(fileName, finalBuffer, {
                     contentType: 'application/pdf',
                     cacheControl: '3600',
                     upsert: true,
@@ -159,9 +109,9 @@ export async function POST(request: Request) {
                 uploaded: [fileName],
                 failed: [],
                 compression: {
-                    originalSize,
-                    compressedSize,
-                    savings: `${savings}%`,
+                    originalSize: size,
+                    compressedSize: size,
+                    savings: `0.0%`,
                 }
             });
         }
@@ -195,13 +145,12 @@ export async function POST(request: Request) {
                     const arrayBuffer = await file.arrayBuffer();
                     const originalBuffer = Buffer.from(arrayBuffer);
 
-                    // Compress each PDF
-                    const { optimized, originalSize, compressedSize } = await compressPdf(originalBuffer);
-                    const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+                    // Process each PDF
+                    const { finalBuffer, size } = await processPdfBuffer(originalBuffer);
 
                     const { error } = await admin.storage
                         .from('recruitment-pdfs')
-                        .upload(fileName, optimized, {
+                        .upload(fileName, finalBuffer, {
                             contentType: 'application/pdf',
                             cacheControl: '86400', // 24hr cache for PDFs
                             upsert: true,
@@ -209,7 +158,7 @@ export async function POST(request: Request) {
 
                     if (error) throw { fileName, error: error.message };
 
-                    return { name: fileName, originalSize, compressedSize, savings: `${savings}%` };
+                    return { name: fileName, originalSize: size, compressedSize: size, savings: `0.0%` };
                 })
             );
 

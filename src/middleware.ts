@@ -30,7 +30,15 @@ export async function middleware(request: NextRequest) {
     );
 
     // Use getUser() for secure session verification
-    const { data: { user } } = await supabase.auth.getUser();
+    let user = null;
+    try {
+        const { data } = await supabase.auth.getUser();
+        user = data?.user ?? null;
+    } catch (error) {
+        // Supabase may be temporarily unreachable (e.g. just resumed from pause).
+        // Treat as unauthenticated and let the page handle it gracefully.
+        console.warn('Middleware: Supabase auth check failed, treating as unauthenticated.', error);
+    }
 
     const pathname = request.nextUrl.pathname;
 

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
-    Shield, LogOut, Upload, Trash2, FileText, Search,
+    LogOut, Upload, Trash2, FileText, Search,
     RefreshCw, CheckCircle, AlertCircle, X, Users, FolderUp,
     LayoutDashboard, Bell, UserCog, GraduationCap, ChevronRight,
     Database, Activity, TrendingUp
@@ -289,16 +289,21 @@ export default function FacultyDashboard() {
 
             {/* Top Navigation Bar */}
             <nav className="border-b border-white/5 bg-[#020617]/90 backdrop-blur-3xl sticky top-0 z-50">
-                <div className="px-6 lg:px-8 h-16 flex justify-between items-center">
+                <div className="px-6 lg:px-8 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <div className="bg-gradient-to-tr from-emerald-600 to-teal-500 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
-                            <Shield className="w-5 h-5 text-white" />
+                        <div className="flex items-center gap-2">
+                            <div className="bg-white p-1 rounded-xl shadow-lg shadow-emerald-500/20 h-12 flex items-center justify-center overflow-hidden">
+                                <img src="/logo.jpg" alt="KLU Logo" className="h-full w-auto object-contain" />
+                            </div>
+                            <div className="bg-white p-1 rounded-xl shadow-lg shadow-teal-500/20 h-12 flex items-center justify-center overflow-hidden">
+                                <img src="/template.jpg" alt="Template Document Logo" className="h-full w-auto object-contain" />
+                            </div>
                         </div>
                         <div className="hidden sm:block">
-                            <h1 className="font-black text-lg tracking-tight text-white leading-none">
+                            <h1 className="font-black text-xl tracking-tight text-white leading-none">
                                 KLU <span className="text-emerald-500">Admin</span>
                             </h1>
-                            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-600">Recruitment Management Console</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600 mt-1">Recruitment Management Console</p>
                         </div>
                     </div>
 
@@ -458,7 +463,7 @@ export default function FacultyDashboard() {
                                                 : 'border-white/10 hover:border-emerald-500/30 bg-white/[0.01]'
                                                 }`}
                                         >
-                                            <input type="file" accept=".pdf" multiple {...{ webkitdirectory: "true", directory: "true" }} onChange={handleFileInput}
+                                            <input type="file" accept=".pdf" multiple onChange={handleFileInput}
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={uploading} />
 
                                             {uploading ? (
@@ -480,7 +485,7 @@ export default function FacultyDashboard() {
                                                 </div>
                                             )}
                                         </div>
-
+                                    </div>
                                         {/* Upload Results */}
                                         <AnimatePresence>
                                             {uploadResults.length > 0 && (
@@ -507,7 +512,6 @@ export default function FacultyDashboard() {
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
-                                    </div>
 
                                     {/* Recent Documents Preview */}
                                     {files.length > 0 && (
@@ -565,7 +569,7 @@ export default function FacultyDashboard() {
                                             : 'border-white/10 hover:border-emerald-500/30 bg-white/[0.01]'
                                             }`}
                                     >
-                                        <input type="file" accept=".pdf" multiple {...{ webkitdirectory: "true", directory: "true" }} onChange={handleFileInput}
+                                        <input type="file" accept=".pdf" multiple onChange={handleFileInput}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={uploading} />
                                         <div className="flex items-center justify-center gap-4">
                                             <Upload className="w-6 h-6 text-emerald-500" />

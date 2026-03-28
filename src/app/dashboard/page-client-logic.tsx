@@ -74,14 +74,21 @@ export default function DashboardClient() {
 
             {/* Header Navigation */}
             <nav className="border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded-lg shadow-lg shadow-blue-500/10">
-                            <FileText className="w-5 h-5 text-white" />
+                <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-white p-1 rounded-xl shadow-lg shadow-blue-500/20 h-12 flex items-center justify-center overflow-hidden">
+                                <img src="/logo.jpg" alt="KLU Logo" className="h-full w-auto object-contain" />
+                            </div>
+                            <div className="bg-white p-1 rounded-xl shadow-lg shadow-indigo-500/20 h-12 flex items-center justify-center overflow-hidden">
+                                <img src="/template.jpg" alt="Template Document Logo" className="h-full w-auto object-contain" />
+                            </div>
                         </div>
-                        <span className="font-bold text-lg tracking-tight text-white">
-                            KLU <span className="text-blue-500">Recruitment</span>
-                        </span>
+                        <div className="hidden sm:block">
+                            <span className="font-bold text-xl tracking-tight text-white leading-none block">
+                                KLU <span className="text-blue-500">Recruitment</span>
+                            </span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="hidden lg:flex items-center gap-3 text-slate-400 text-xs font-medium uppercase tracking-widest">
@@ -217,6 +224,35 @@ export default function DashboardClient() {
                                         <span className="text-slate-500 font-medium tracking-tight">Portal Status</span>
                                         <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase rounded-md border border-emerald-500/20">Active</span>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Document Template Preview */}
+                            <Card className="border-white/5 bg-white/[0.02] backdrop-blur-sm rounded-3xl overflow-hidden group">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                        Document Template
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/5 group-hover:border-blue-500/30 transition-all">
+                                        <img 
+                                            src="/template.jpg" 
+                                            alt="Document Template" 
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60"></div>
+                                        <Button asChild variant="secondary" size="sm" className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white rounded-full">
+                                            <a href="/template.jpg" target="_blank" rel="noopener noreferrer">
+                                                <ExternalLink className="w-3 h-3 mr-2" />
+                                                Full View
+                                            </a>
+                                        </Button>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed px-1">
+                                        This is the official template for KLU recruitment documents. Use this as a reference when verifying your files.
+                                    </p>
                                 </CardContent>
                             </Card>
 

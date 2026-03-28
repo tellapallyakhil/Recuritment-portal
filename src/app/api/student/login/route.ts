@@ -1,16 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-function getAdminClient() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    );
-}
-
 // POST: Validate student credentials against student_registry
-// Then sign them into Supabase Auth (auto-create if first login)
 export async function POST(request: Request) {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return cookieStore.getAll();
+                },
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        cookieStore.set(name, value, options)
+                    );
+                },
+            },
+        }
+    );
+
     try {
         const { email, application_number } = await request.json();
 
@@ -21,9 +33,11 @@ export async function POST(request: Request) {
             );
         }
 
-        const admin = getAdminClient();
+        const admin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
-        // Check if this email + application_number combination exists
         const { data: student, error: lookupError } = await admin
             .from('student_registry')
             .select('*')
@@ -38,84 +52,31 @@ export async function POST(request: Request) {
             );
         }
 
-        // Credentials are valid — now sign into Supabase Auth
-        // Use application_number as the password for Supabase Auth
+        // 2. Auth the user
         const password = application_number.trim();
-
-        // Try signing in first
-        const { data: signInData, error: signInError } = await admin.auth.signInWithPassword({
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: email.trim().toLowerCase(),
             password,
         });
 
-        if (!signInError && signInData.session) {
-            return NextResponse.json({
-                success: true,
-                session: signInData.session,
-                student: {
-                    email: student.email,
-                    application_number: student.application_number,
-                    name: student.name,
-                },
-            });
-        }
+        if (signInError) {
+            // Auto-create user if not in Auth but in Registry
+            if (signInError.message.includes('Invalid login credentials')) {
+                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                    email: email.trim().toLowerCase(),
+                    password,
+                });
 
-        // If sign-in failed, try creating the user (first time login)
-        const { data: signUpData, error: signUpError } = await admin.auth.admin.createUser({
-            email: email.trim().toLowerCase(),
-            password,
-            email_confirm: true,
-        });
-
-        if (signUpError) {
-            // User might exist with different password — try updating their password
-            if (signUpError.message.includes('already') || signUpError.message.includes('exists')) {
-                // Get user by email and update their password
-                const { data: { users } } = await admin.auth.admin.listUsers();
-                const existingUser = users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
-
-                if (existingUser) {
-                    await admin.auth.admin.updateUserById(existingUser.id, { password });
-
-                    // Now try signing in again
-                    const { data: retryData, error: retryError } = await admin.auth.signInWithPassword({
-                        email: email.trim().toLowerCase(),
-                        password,
-                    });
-
-                    if (!retryError && retryData.session) {
-                        return NextResponse.json({
-                            success: true,
-                            session: retryData.session,
-                            student: {
-                                email: student.email,
-                                application_number: student.application_number,
-                                name: student.name,
-                            },
-                        });
-                    }
+                if (signUpError) throw signUpError;
+                if (!signUpData.session) {
+                    return NextResponse.json({ error: 'Administrative registration failed.' }, { status: 500 });
                 }
+            } else {
+                throw signInError;
             }
-            throw signUpError;
         }
 
-        // Sign in the newly created user
-        const { data: newSignIn, error: newSignInError } = await admin.auth.signInWithPassword({
-            email: email.trim().toLowerCase(),
-            password,
-        });
-
-        if (newSignInError) throw newSignInError;
-
-        return NextResponse.json({
-            success: true,
-            session: newSignIn.session,
-            student: {
-                email: student.email,
-                application_number: student.application_number,
-                name: student.name,
-            },
-        });
+        return NextResponse.json({ success: true });
     } catch (error: any) {
         console.error('Student login error:', error);
         return NextResponse.json({ error: error.message || 'Login failed' }, { status: 500 });

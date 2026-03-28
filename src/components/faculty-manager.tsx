@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardTitle, CardContent } from '@/components/ui/card';
 import {
-    Shield, UserPlus, Trash2, Search,
+    UserPlus, Trash2, Search,
     CheckCircle, AlertCircle, RefreshCw, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -151,8 +151,8 @@ export function FacultyManager() {
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-amber-500/10 rounded-2xl">
-                            <Shield className="w-6 h-6 text-amber-500" />
+                        <div className="bg-white p-0.5 rounded-2xl shadow-lg shadow-amber-500/10 w-12 h-12 flex items-center justify-center overflow-hidden">
+                            <img src="/logo.jpg" alt="KLU Logo" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 mb-1">Access Control</p>
@@ -253,7 +253,9 @@ export function FacultyManager() {
                             </div>
                         ) : filteredFaculty.length === 0 ? (
                             <div className="py-12 text-center opacity-50">
-                                <Shield className="w-10 h-10 text-slate-700 mx-auto mb-4" />
+                                <div className="bg-white p-2 rounded-2xl shadow-lg shadow-slate-900/10 w-20 h-20 flex items-center justify-center overflow-hidden mx-auto mb-4 opacity-20">
+                                    <img src="/logo.jpg" alt="KLU Logo" className="w-full h-full object-contain grayscale" />
+                                </div>
                                 <p className="text-lg font-black text-slate-700">No faculty members</p>
                             </div>
                         ) : (
@@ -266,8 +268,8 @@ export function FacultyManager() {
                                     className="group flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-white/10 transition-all"
                                 >
                                     <div className="flex items-center gap-4 min-w-0">
-                                        <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/10 flex-shrink-0">
-                                            <Shield className="w-5 h-5 text-amber-500" />
+                                        <div className="w-12 h-12 bg-white p-0.5 rounded-2xl flex items-center justify-center border border-amber-500/10 flex-shrink-0 overflow-hidden shadow-sm">
+                                            <img src="/logo.jpg" alt="KLU Logo" className="w-full h-full object-contain" />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-sm font-black text-white truncate">
