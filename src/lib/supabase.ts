@@ -10,6 +10,6 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
         detectSessionInUrl: true,
     },
     global: {
-        fetch: (...args: any[]) => fetch(...args),
+        fetch: (...args: Parameters<typeof fetch>) => fetch(...args),
     },
 });
